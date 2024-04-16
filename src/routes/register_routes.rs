@@ -17,6 +17,7 @@ pub fn register_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
 
     let user_pool = Arc::clone(&pool);
     let verify_user_pool = Arc::clone(&pool);
+    let complete_registration_pool = Arc::clone(&pool);
 
 
     // let user_service = UserServices::new(user_pool, verify_user_pool);
@@ -34,5 +35,11 @@ pub fn register_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
                     verify_user(path, axum::Json(verification_data), verify_user_pool)
                 },
             ),
+        )
+        .route(
+            "/complete",
+            post(move |Json(new_user): Json<NewUser>| {
+                create_user(axum::Json(new_user), complete_registration_pool.clone())
+            }),
         )
 }
