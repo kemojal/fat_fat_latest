@@ -32,6 +32,7 @@ use routes::{
     auth_routes::auth_routes, merchant_routes::merchant_routes, payment_routes::payment_routes,
     product_routes::product_routes, transaction_routes::transaction_routes,
     user_routes::user_routes, wallet_routes::wallet_routes,
+    register_routes::register_routes,
 };
 
 pub struct AppState {
@@ -61,6 +62,7 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
         .nest("/api/payment", payment_routes(pool.clone()))
         // .route_layer(middleware::from_fn(auth_middleware))
         .nest("/api/auth", auth_routes(pool.clone()))
+        .nest("/api/register", register_routes(pool.clone()))
         // .route_layer(middleware::from_fn(logger_middleware))
         .fallback(axum::routing::get(|| async {
             (http::StatusCode::NOT_FOUND, "Not Found")

@@ -6,4 +6,4 @@ pub mod product_handlers;
 pub mod transaction_handlers;
 pub mod user_handlers;
 pub mod wallet_handlers;
-pub mod workspace_handlers;
+

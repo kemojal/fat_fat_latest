@@ -106,8 +106,8 @@ pub struct UnverifiedUser {
     pub email: Option<String>,
     pub password_hash: Option<String>,
     pub user_name: Option<String>,
-    pub created_at: Option<NaiveDateTime>, // Change to DateTime type based on your needs (e.g., chrono)
-    pub updated_at: Option<NaiveDateTime>, // Change to DateTime type based on your needs (e.g., chrono)
+    pub created_at: Option<NaiveDateTime>, 
+    pub updated_at: Option<NaiveDateTime>, 
 }
 
 
@@ -116,6 +116,13 @@ pub struct NewUnverifiedUser {
     pub email: Option<String>,
     pub password_hash: Option<String>,
     pub user_name: Option<String>,
-    pub created_at: Option<NaiveDateTime>, // Change to DateTime type based on your needs (e.g., chrono)
-    pub updated_at: Option<NaiveDateTime>, // Change to DateTime type based on your needs (e.g., chrono)
+    pub created_at: Option<NaiveDateTime>, 
+    pub updated_at: Option<NaiveDateTime>, 
+}
+
+
+pub struct CopyUnverifiedUser {
+    pub email: Option<String>,
+    pub password_hash: Option<String>,
+    pub user_name: Option<String>,
 }
