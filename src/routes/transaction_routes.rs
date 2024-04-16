@@ -19,11 +19,7 @@ pub fn transaction_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>>  {
 
     let user_pool = Arc::clone(&pool);
     let verify_user_pool = Arc::clone(&pool);
-    // let getUserPool = Arc::clone(&pool);
-    // let resendCodePool = Arc::clone(&pool);
-    // let editUserPool = Arc::clone(&pool);
-    // let editUserPasswordPool = Arc::clone(&pool);
-    // let deleteUserPool = Arc::clone(&pool);
+    
 
 
     Router::new()
