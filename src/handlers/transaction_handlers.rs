@@ -1,4 +1,4 @@
-use axum::extract::Path;
+use axum::extract::{Path, State};
 use reqwest::StatusCode;
 use std::sync::Arc;
 
@@ -18,7 +18,7 @@ use sqlx::{query, query_as, PgPool};
 
 
 
-pub async fn get_user_transactions(Path(phone_number): Path<String>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn get_user_transactions(Path(phone_number): Path<String>, State(pool): State<Arc<PgPool>>) -> impl IntoResponse {
     let transactions: Vec<TransactionWithUserDetails> = query_as!(
         TransactionWithUserDetails,
         r#"
@@ -68,8 +68,8 @@ pub async fn get_user_transactions(Path(phone_number): Path<String>, pool: Arc<P
 
 pub async fn send_money(
     Path(phone_number): Path<String>,
+    State(pool): State<Arc<PgPool>>,
     Json(new_transaction): Json<NewTransaction>,
-    pool: Arc<PgPool>,
 ) -> impl IntoResponse {
     // ... (omitted for brevity)
     let sender_id = new_transaction.sender_id;

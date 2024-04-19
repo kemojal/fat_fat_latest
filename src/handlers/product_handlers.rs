@@ -339,7 +339,7 @@ pub async fn get_qr_code(
     }
 
 
-    print!("cococococo");
+    // print!("cococococo");
 
     Json(json!([]))
 
