@@ -661,7 +661,7 @@ pub async fn delete_user(
     }
 }
 
-fn hash_password(password: &str) -> String {
+pub fn hash_password(password: &str) -> String {
     let password_hash = hash(password, DEFAULT_COST).expect("Failed to hash password");
     password_hash
 }

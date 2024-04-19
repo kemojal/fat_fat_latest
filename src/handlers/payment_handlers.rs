@@ -2,7 +2,7 @@ use crate::models::merchant_models::MerchantUserId;
 use crate::models::payment_models::{EditPayment, NewPayment, Payment};
 
 
-use axum::extract::Path;
+use axum::extract::{Path, State};
 
 use axum::response::{IntoResponse, Json};
 
@@ -21,38 +21,10 @@ use std::sync::Arc;
 
 
 pub async fn make_payment(
+    // pool: Arc<PgPool>,
+    State(pool): State<Arc<PgPool>>,
     Json(new_payment): Json<NewPayment>,
-    pool: Arc<PgPool>,
 ) -> impl IntoResponse {
-    // let user_wallet_result: Vec<Wallet> = query_as!(
-    //     Wallet,
-    //     "
-    //     SELECT id, user_id, balance, currency, created_at, updated_at
-    //     FROM wallets
-    //     WHERE user_id = $1
-    //     ",
-    //     new_payment.user_id
-    // )
-    // .fetch_all(&*pool)
-    // .await
-    // .expect("Failed to fetch user account information");
-
-    // if let Some(first_user_wallet) = user_wallet_result.get(0) {
-    //     if first_user_wallet.balance >= new_payment.amount
-    //         && first_user_wallet.currency == new_payment.currency
-    //     {
-    //         // let updated_user_balance = match (first_user_wallet.balance.clone(), new_payment.amount.clone()){
-    //         //     (Some(balance), Some(amt)) => {
-    //         //         let new_balance = balance - amt;
-    //         //         Some(new_balance)
-    //         //     }
-    //         //     _ => None,
-
-    //         // }
-    //     } else {
-    //         println!("not enough funds or same currency")
-    //     }
-    // }
 
     let merchant_user_id: Option<MerchantUserId> = query_as!(
         MerchantUserId,
@@ -176,7 +148,8 @@ pub async fn make_payment(
 
 pub async fn get_merchant_payments(
     Path(merchant_id): Path<i32>,
-    pool: Arc<PgPool>,
+    // pool: Arc<PgPool>,
+    State(pool): State<Arc<PgPool>>,
 ) -> impl IntoResponse {
     let payments: Vec<Payment> = query_as!(
         Payment,
@@ -192,7 +165,11 @@ pub async fn get_merchant_payments(
     Json(payments)
 }
 
-pub async fn get_my_payments(Path(user_id): Path<i32>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn get_my_payments(
+    Path(user_id): Path<i32>, 
+    // pool: Arc<PgPool>
+    State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
     let payments: Vec<Payment> = query_as!(
         Payment,
         "
@@ -209,8 +186,9 @@ pub async fn get_my_payments(Path(user_id): Path<i32>, pool: Arc<PgPool>) -> imp
 
 pub async fn update_payment(
     Path(payment_id): Path<i32>,
+    // pool: Arc<PgPool>,
+    State(pool): State<Arc<PgPool>>,
     Json(payment_data): Json<EditPayment>,
-    pool: Arc<PgPool>,
 ) -> impl IntoResponse {
     let result = sqlx::query(
         "UPDATE payments SET amount = $1, currency = $2, product_id = $3, status = $4 WHERE id = $5",
@@ -233,7 +211,10 @@ pub async fn update_payment(
     }
 }
 
-pub async fn delete_payment(Path(payment_id): Path<i32>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn delete_payment(Path(payment_id): Path<i32>, 
+// pool: Arc<PgPool>
+State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
     let result = query!(
         "
         DELETE FROM payments
@@ -264,7 +245,10 @@ pub async fn delete_payment(Path(payment_id): Path<i32>, pool: Arc<PgPool>) -> i
     }
 }
 
-pub async fn cancel_payment(Path(payment_id): Path<i32>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn cancel_payment(Path(payment_id): Path<i32>, 
+// pool: Arc<PgPool>
+State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
     let result = sqlx::query("UPDATE payments SET status = 'cancelled' WHERE id = $1")
         .bind(payment_id)
         .execute(&*pool)

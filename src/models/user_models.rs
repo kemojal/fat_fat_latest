@@ -49,6 +49,8 @@ pub  struct UserEmail {
     pub  email: Option<String>,
 }
 
+
+#[derive(Deserialize)]
 pub struct UserPhoneNumber{
     pub  phone_number: Option<String>,
 }
@@ -96,16 +98,26 @@ pub  struct BalanceAmount {
 
 //unverified user registration process
 #[derive(Debug, Deserialize)]
-pub  struct UnverifiedUserPhoneNumber {
+pub  struct RegisterData {
     pub  phone_number: Option<String>
+}
+
+
+#[derive(Debug, Deserialize)]
+pub  struct VerifyData {
+    pub phone_number: Option<String>,
+    pub  verification_code: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UnverifiedUser {
     pub id: i32,
-    pub email: Option<String>,
+    pub username: Option<String>,
     pub password_hash: Option<String>,
-    pub user_name: Option<String>,
+    pub phone_number: String,
+    pub  verification_code: Option<String>,
+    pub email: Option<String>,
+    pub phone_verified: Option<bool>,
     pub created_at: Option<NaiveDateTime>, 
     pub updated_at: Option<NaiveDateTime>, 
 }
@@ -113,16 +125,17 @@ pub struct UnverifiedUser {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewUnverifiedUser {
+    pub username: Option<String>,
     pub email: Option<String>,
-    pub password_hash: Option<String>,
-    pub user_name: Option<String>,
-    pub created_at: Option<NaiveDateTime>, 
-    pub updated_at: Option<NaiveDateTime>, 
+    pub phone_number: String,
+    pub password: Option<String>,
+    // pub created_at: Option<NaiveDateTime>, 
+    // pub updated_at: Option<NaiveDateTime>, 
 }
 
 
 pub struct CopyUnverifiedUser {
     pub email: Option<String>,
     pub password_hash: Option<String>,
-    pub user_name: Option<String>,
+    pub username: Option<String>,
 }
