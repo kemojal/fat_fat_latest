@@ -3,7 +3,7 @@ use crate::models::product_models::{EditProduct, NewProduct, Product};
 use crate::models::user_models::UserId;
 
 
-use axum::extract::Path;
+use axum::extract::{Path, State};
 
 use axum::response::{IntoResponse, Json};
 
@@ -24,7 +24,9 @@ use qrcode::QrCode;
 
 pub async fn create_product(
     Path(user_id): Path<i32>,
-    Json(new_product): Json<NewProduct>, pool: Arc<PgPool>) -> impl IntoResponse {
+    State(pool): State<Arc<PgPool>>,
+    Json(new_product): Json<NewProduct>
+) -> impl IntoResponse {
 
         let merchant_id: Vec<UserId> = query_as!(
             UserId,
@@ -156,7 +158,8 @@ let cursor = Cursor::new(buffer.clone());
 
 pub async fn get_merchant_products(
     Path(merchant_id): Path<i32>,
-    pool: Arc<PgPool>) -> impl IntoResponse {
+    State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
 
     
     
@@ -180,8 +183,8 @@ pub async fn get_merchant_products(
 
 pub async fn update_product(
     Path(product_id): Path<i32>,
+    State(pool): State<Arc<PgPool>>,
     Json(product_data): Json<EditProduct>,
-    pool: Arc<PgPool>,
 ) -> impl IntoResponse {
     // Update the product details in the database
     let result = sqlx::query(
@@ -210,7 +213,7 @@ pub async fn update_product(
 }
 
 
-pub async fn delete_product(Path(product_id): Path<i32>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn delete_product(Path(product_id): Path<i32>, State(pool): State<Arc<PgPool>>) -> impl IntoResponse {
     let result = query!(
         "
             DELETE FROM products_and_services
@@ -248,7 +251,8 @@ pub async fn delete_product(Path(product_id): Path<i32>, pool: Arc<PgPool>) -> i
 pub async fn get_qr_code(
     Path(product_id): Path<i32>,
     // Json(payload): Json<CreateQrCodePayload>,
-    pool: Arc<PgPool>,
+    // pool: Arc<PgPool>,
+    State(pool): State<Arc<PgPool>>
 ) -> impl IntoResponse {
     // Get the product details from the database
     let product_result:Vec<Product>= query_as!(
