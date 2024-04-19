@@ -146,7 +146,10 @@ pub async fn get_user_balance(
     }
 }
 
-pub async fn create_user(Json(new_user): Json<NewUser>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn create_user(
+    State(pool): State<Arc<PgPool>>,
+    Json(new_user): Json<NewUser>, 
+) -> impl IntoResponse {
     // let first_name = new_user.first_name;
     // let last_name = new_user.last_name;
     let email = new_user.email;
@@ -305,8 +308,8 @@ pub async fn create_user(Json(new_user): Json<NewUser>, pool: Arc<PgPool>) -> im
 
 pub async fn verify_user(
     Path(email): Path<String>,
+    State(pool): State<Arc<PgPool>>, // State(pool): State<Arc<PgPool>>,
     Json(verification_data): Json<VerifyUser>,
-    pool: Arc<PgPool>, // State(pool): State<Arc<PgPool>>,
 ) -> impl IntoResponse {
     let code = verification_data.verification_code;
 
@@ -544,9 +547,9 @@ fn send_verification_email(email_address: &str, verification_code: &str) -> Resu
 
 pub async fn edit_user(
     Path(id): Path<i32>,
+    State(pool): State<Arc<PgPool>>,
     edit_user_data: Json<EditUser>,
-    pool: Arc<PgPool>,
-    // State(pool): State<Arc<PgPool>>,
+   
 ) -> impl IntoResponse {
     // let first_name = edit_user_data.first_name.clone();
     // let last_name = edit_user_data.last_name.clone();
