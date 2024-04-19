@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use axum::{Json, response::IntoResponse};
+use axum::{extract::State, response::IntoResponse, Json};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode,  EncodingKey, Header};
 use serde_json::json;
@@ -7,7 +7,11 @@ use sqlx::{PgPool, query_as};
 use crate::models::auth_models::{AuthUser, Claims, SignInData};
 
 
-pub async fn sign_in(Json(signin_data): Json<SignInData>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn sign_in(
+    State(pool): State<Arc<PgPool>>,
+    Json(signin_data): Json<SignInData>, 
+    
+) -> impl IntoResponse {
     // Extract username and password from signin_data
     let user_email = signin_data.email;
     let user_password = signin_data.password;
@@ -104,7 +108,10 @@ pub async fn sign_in(Json(signin_data): Json<SignInData>, pool: Arc<PgPool>) -> 
 
 
 
-pub async fn sign_out(Json(signin_data): Json<SignInData>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn sign_out(
+    State(pool): State<Arc<PgPool>>,
+    Json(signin_data): Json<SignInData>, 
+) -> impl IntoResponse {
     Json(json!({
         "status": "ok",
         "message": "Invalid credentials"

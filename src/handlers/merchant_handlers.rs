@@ -1,6 +1,6 @@
 use crate::models::merchant_models::{EditMerchant, Merchant, MerchantId, NewMerchant};
 use crate::models::user_models::UserId;
-use axum::extract::Path;
+use axum::extract::{Path, State};
 use axum::response::{IntoResponse, Json};
 
 use reqwest::StatusCode;
@@ -10,8 +10,9 @@ use std::sync::Arc;
 
 pub async fn create_merchant(
     Path(username): Path<String>,
+    State(pool): State<Arc<PgPool>>,
     Json(new_merchant): Json<NewMerchant>,
-    pool: Arc<PgPool>,
+   
 ) -> impl IntoResponse {
     let user_id: Vec<UserId> = query_as!(
         UserId,
@@ -103,7 +104,10 @@ pub async fn create_merchant(
     Json(json!([]))
 }
 
-pub async fn get_merchant(Path(username): Path<String>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn get_merchant(
+    Path(username): Path<String>, 
+    State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
     let user_id: Vec<UserId> = query_as!(
         UserId,
         "
@@ -153,8 +157,9 @@ pub async fn get_merchant(Path(username): Path<String>, pool: Arc<PgPool>) -> im
 
 pub async fn edit_merchant(
     Path(merchant_id): Path<i32>,
+    State(pool): State<Arc<PgPool>>,
     Json(payload): Json<EditMerchant>,
-    pool: Arc<PgPool>,
+    
 ) -> impl IntoResponse {
     // Check if the merchant exists
     // let merchant_exists = query!("SELECT EXISTS(SELECT 1 FROM merchants WHERE id = $1)", id)
@@ -192,7 +197,7 @@ pub async fn edit_merchant(
     }
 }
 
-pub async fn delete_merchant(Path(id): Path<i32>, pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn delete_merchant(Path(id): Path<i32>, State(pool): State<Arc<PgPool>>,) -> impl IntoResponse {
     let result = query!(
         "
             DELETE FROM merchants
