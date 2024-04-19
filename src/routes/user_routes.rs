@@ -13,19 +13,7 @@ use sqlx::{PgPool, Pool, Postgres};
 // use crate::services::UserServices;
 
 pub fn user_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
-    // let get_pool = Arc::clone(&pool);
-    // let get_user_pool = Arc::clone(&pool);
-
-    let user_pool = Arc::clone(&pool);
-    let verify_user_pool = Arc::clone(&pool);
-    // let get_user_pool = Arc::clone(&pool);
-    // let get_user_balance_pool = Arc::clone(&pool);
-    // let resend_code_pool = Arc::clone(&pool);
-    let edit_user_pool = Arc::clone(&pool);
-    let edit_user_password_pool = Arc::clone(&pool);
-    // let delete_user_pool = Arc::clone(&pool);
-
-    // let user_service = UserServices::new(user_pool, verify_user_pool);
+    
     Router::new()
         .route("/users", get(get_users))
         .route("/create", post(create_user))

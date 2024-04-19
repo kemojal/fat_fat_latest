@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use axum::extract::{Path};
+use axum::extract::{Path, State};
 use axum::response::{Json, IntoResponse};
 
 
@@ -10,7 +10,7 @@ use crate::models::user_models::UserId;
 use crate::models::wallet_models::{NewWallet, Wallet};
 
 
-pub async fn get_wallets(pool: Arc<PgPool>) -> impl IntoResponse {
+pub async fn get_wallets(State(pool): State<Arc<PgPool>>,) -> impl IntoResponse {
     let wallets: Vec<Wallet> = query_as!(
         Wallet,
         r#"
@@ -29,7 +29,8 @@ pub async fn get_wallets(pool: Arc<PgPool>) -> impl IntoResponse {
 
 pub async fn get_wallets_by_user_id(
     Path(user_id): Path<i32>,
-    pool: Arc<PgPool>) -> impl IntoResponse {
+    State(pool): State<Arc<PgPool>>,
+) -> impl IntoResponse {
     let issues: Vec<Wallet> = query_as!(
         Wallet,
         "
@@ -172,8 +173,9 @@ pub async fn get_wallets_by_user_id(
 
 pub async fn create_wallet(
     Path(username): Path<String>,
+    State(pool): State<Arc<PgPool>>,
     Json(new_wallet): Json<NewWallet>,
-    pool: Arc<PgPool>) -> impl IntoResponse {
+) -> impl IntoResponse {
 
 
         let balance = new_wallet.balance;
@@ -345,7 +347,7 @@ pub async fn create_wallet(
 //
 pub async fn delete_wallet(
     Path(wallet_id): Path<i32>, 
-    pool: Arc<PgPool>,
+    State(pool): State<Arc<PgPool>>,
     
 ) -> impl IntoResponse {
     // Use the id to delete the item from the database
