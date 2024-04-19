@@ -8,7 +8,7 @@ use crate::handlers::payment_handlers::{
     cancel_payment, delete_payment, get_merchant_payments, get_my_payments, make_payment,
     update_payment,
 };
-use crate::models::payment_models::{EditPayment, NewPayment};
+
 
 pub fn payment_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
     
