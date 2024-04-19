@@ -1,14 +1,14 @@
-use axum::extract::Path;
+
 use axum::routing::{delete, get, post, put};
-use axum::{Json, Router};
+use axum::Router;
 use std::sync::Arc;
 
 use crate::handlers::user_handlers::{
     create_user, delete_user, edit_user, get_user_balance, get_user_profile, get_users,
     resend_verification_code, verify_user,
 };
-use crate::models::user_models::{EditUser, NewUser, VerifyUser};
-use sqlx::{PgPool, Pool, Postgres};
+
+use sqlx::PgPool;
 
 // use crate::services::UserServices;
 

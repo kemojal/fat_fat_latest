@@ -1,4 +1,4 @@
-use axum::routing::{delete, get, post, put};
+use axum::routing::{get, post};
 use axum::Router;
 use std::sync::Arc;
 
@@ -6,7 +6,7 @@ use crate::handlers::transaction_handlers::{get_user_transactions, send_money};
 
 use sqlx::PgPool;
 
-pub fn transaction_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
+pub fn transaction_routes(_pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
     Router::new()
         // .route("/", get( move || {get_user_transactions(get_pool)  }))
         .route("/:phone_number", get(get_user_transactions))

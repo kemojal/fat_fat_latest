@@ -1,6 +1,6 @@
-use axum::extract::Path;
+
 use axum::routing::{delete, get, post, put};
-use axum::{Json, Router};
+use axum::Router;
 use sqlx::PgPool;
 use std::sync::Arc;
 
@@ -10,7 +10,7 @@ use crate::handlers::payment_handlers::{
 };
 
 
-pub fn payment_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
+pub fn payment_routes(_pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
     
     Router::new()
         .route("/:merchant_id/payments", get(get_merchant_payments))

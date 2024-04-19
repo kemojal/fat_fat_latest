@@ -9,7 +9,7 @@ use crate::handlers::product_handlers::{
 };
 
 
-pub fn product_routes(pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
+pub fn product_routes(_pool: Arc<PgPool>) -> Router<Arc<PgPool>> {
     
     Router::new()
         .route("/:merchant_id/products", get(get_merchant_products))
