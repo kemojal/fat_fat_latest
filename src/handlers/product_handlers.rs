@@ -73,21 +73,7 @@ pub async fn create_product(
                     // Generate QR code image
                 
 
-                // let qr_code_data = Product {
-                //     id: row.id,
-                //     merchant_id: row.merchant_id,
-                //     title: row.title,
-                //     description: row.description,
-                //     price: Some(row.price),
-                //     is_product: row.is_product,
-                //     is_discounted: row.is_discounted,
-                //     discounted_amount: row.discounted_amount,
-                //     on_sale: row.on_sale,
-                //     on_sale_amount: row.on_sale_amount,
-                //     created_at: row.created_at,
-                //     edited_at: row.edited_at
- 
-                // };
+                
                 let qr_code_data = format!(
                     "https://example.com/product/{}?id={}&merchant_id={}&price={}&is_product={}&is_discounted={}&on_sale={}",
                     new_id,
@@ -136,12 +122,7 @@ let cursor = Cursor::new(buffer.clone());
     axum::response::Response::builder().header("content-type", "image/webp").body(buffer.into_inner());
 
 
-                    // return Json(json!({
-                    //     "status": "success",
-                    //     "message": "Product added successfully",
-                    //     "new_id": new_id, 
-                    //     "qr_image": qr_image_data
-                    // }));
+                  
                 }
                 Err(e) => {
                     return Json(json!({
@@ -288,22 +269,7 @@ pub async fn get_qr_code(
         let qr_image = qr_code.render::<Luma<u8>>().build();
 
 
-    //     let mut reader = BufReader::new(qr_image);
-    // let mut buffer = Vec::new();
-
-    // // Read file into vector.
-    // reader.read_to_end(&mut buffer).unwrap();
-    // ([("content-type", "image/png; charset=utf-8")], buffer).into_response()
-    // let stream = ReaderStream::new(qr_image);
-
-        
-
-        
-
-        // Return the JSON response with the QR code image
-        // 
-        
-        // Ok(IntoResponse::Ok().json(response_json))
+    //    
 
 
         let mut buffer: Cursor<Vec<u8>> = Cursor::new(Vec::new());
@@ -327,14 +293,6 @@ pub async fn get_qr_code(
         
         
             axum::response::Response::builder().header("content-type", "image/webp").body(buffer.into_inner());
-
-
-            
-        
-
-      
-
-    
 
     }
 
