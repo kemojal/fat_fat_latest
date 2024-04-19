@@ -52,19 +52,6 @@ pub async fn get_user_transactions(Path(phone_number): Path<String>, State(pool)
 }
 
 
-// pub async fn get_user_profile(Path(email): Path<String>, pool: Arc<PgPool>) -> impl IntoResponse {
-//     let user: Vec<User> = query_as!(
-//         User,
-//         "SELECT id, email, password_hash, verification_code,  verified,  created_at, updated_at FROM users WHERE email = $1",
-//         email
-//     )
-//         .fetch_all(&*pool)
-//         .await
-//         .expect("Failed to fetch appointments");
-
-//     Json(user)
-// }
-
 
 pub async fn send_money(
     Path(phone_number): Path<String>,
@@ -270,79 +257,3 @@ pub async fn send_money(
 }
 
 
-
-// pub async fn edit_user(
-//     Path(id): Path<i32>,
-//     edit_user_data: Json<EditUser>,
-//     pool: Arc<PgPool>
-// ) -> impl IntoResponse {
-
-//     // let first_name = edit_user_data.first_name.clone();
-//     // let last_name = edit_user_data.last_name.clone();
-//     let email = edit_user_data.email.clone();
-
-//     // let completed = edit_todo_data.completed;
-
-//     // UPDATE users
-//     // SET first_name = coalesce($2, first_name),
-//     // last_name = coalesce($3, last_name),
-//     // email = coalesce($4, email)
-//     // WHERE id = $1
-//     // RETURNING *
-
-//     let update_result = query!(
-//         "
-//         UPDATE users
-//         SET email = coalesce($2, email)
-//         WHERE id = $1
-//         RETURNING *",
-//         id,
-//     email)
-//         .fetch_one(&*pool)
-//         .await;
-
-//     if update_result.is_ok() {
-//         // Return a success response
-//         Json(json!({
-//             "status": "success",
-//             "message": format!("User with ID {} edited", id)
-//         }))
-//     } else {
-//         // Return an error response
-//         Json(json!({
-//             "status": "error",
-//             "message": "Failed to update user"
-//         }))
-//     }
-
-// }
-
-// pub async fn delete_user(
-//     Path(id): Path<i32>,
-//     pool: Arc<PgPool>
-// ) -> impl IntoResponse {
-//     println!("delete_todo id = {}", id);
-
-//     // Use the id to delete the item from the database
-//     let delete_result = query!(
-//         "DELETE FROM users WHERE id = $1",
-//         id
-//     )
-//         .execute(&*pool)
-//         .await;
-
-//     if delete_result.is_ok() {
-//         // Return a success response
-//         Json(json!({
-//             "status": "success",
-//             "message": format!("User with ID {} deleted", id)
-//         }))
-//     } else {
-//         // Return an error response
-//         Json(json!({
-//             "status": "error",
-//             "message": format!("Failed to delete user with ID {}", id)
-//         }))
-//     }
-
-// }
