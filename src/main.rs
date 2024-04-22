@@ -1,7 +1,8 @@
 mod db;
-use db::create_db_pool;
 
 use axum::http::{self, HeaderValue, Method};
+use axum::routing::get;
+use axum_prometheus::PrometheusMetricLayer;
 use middlewares::auth_middleware::auth_middleware;
 use middlewares::logger_middleware::logger_middleware;
 // use middlewares::rate_limit_middleware::RateLimitStore;
@@ -13,26 +14,23 @@ use tokio::net::TcpListener;
 use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use axum::{middleware, Router};
 
-use sqlx::{ Pool, Postgres};
+use sqlx::{Pool, Postgres};
 
 use tower_http::cors::CorsLayer;
 
-
 mod configs;
-mod services;
 mod handlers;
 mod middlewares;
 mod models;
 mod routes;
+mod services;
 mod utils;
-
 
 // use routes::barbershop_routes;
 use routes::{
     auth_routes::auth_routes, merchant_routes::merchant_routes, payment_routes::payment_routes,
-    product_routes::product_routes, transaction_routes::transaction_routes,
-    user_routes::user_routes, wallet_routes::wallet_routes,
-    register_routes::register_routes,
+    product_routes::product_routes, register_routes::register_routes,
+    transaction_routes::transaction_routes, user_routes::user_routes, wallet_routes::wallet_routes,
 };
 
 pub struct AppState {
@@ -53,6 +51,9 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
         // .allow_origin(Any)
         .allow_origin("http://localhost:3003".parse::<HeaderValue>().unwrap());
 
+    //prometheus metrics and monitoring
+    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
     Router::new()
         .nest("/api/user", user_routes(pool.clone()))
         .nest("/api/wallet", wallet_routes(pool.clone()))
@@ -68,6 +69,8 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
             (http::StatusCode::NOT_FOUND, "Not Found")
         }))
         .layer(CorsLayer::permissive())
+        .route("/metrics", get(|| async move { metric_handle.render() }))
+        .layer(prometheus_layer)
         .with_state(pool)
 }
 

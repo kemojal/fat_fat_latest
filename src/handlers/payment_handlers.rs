@@ -1,5 +1,6 @@
 use crate::models::merchant_models::MerchantUserId;
 use crate::models::payment_models::{EditPayment, NewPayment, Payment};
+use crate::services::payment_service::get_merchant_user_id;
 
 
 use axum::extract::{Path, State};
@@ -9,7 +10,8 @@ use axum::response::{IntoResponse, Json};
 
 
 use reqwest::StatusCode;
-use serde_json::json;
+use serde_json::{json};
+// use sqlx::postgres::PgQueryResult;
 use sqlx::{query, query_as, PgPool};
 use std::sync::Arc;
 
@@ -17,6 +19,36 @@ use std::sync::Arc;
 
 
 
+// pub async fn make_payment(
+//     State(pool): State<Arc<PgPool>>,
+//     Json(new_payment): Json<NewPayment>,
+// ) -> impl IntoResponse {
+//     let merchant_user_id = get_merchant_user_id(&pool, new_payment.merchant_id)
+//         .await
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+//     let mut transaction = pool.begin().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e));
+
+//     update_merchant_wallet(&mut transaction, merchant_user_id.user_id, new_payment.amount)
+//         .await
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+//     update_user_wallet(&mut transaction, new_payment.user_id, -new_payment.amount)
+//         .await
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+//     let payment_id = insert_payment(&mut transaction, &new_payment)
+//         .await
+//         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+//     transaction.commit().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+//     (StatusCode::OK, Json(json!({
+//         "status": "success",
+//         "message": "Payment made successfully",
+//         "new_payment_id": payment_id
+//     }))).into_response()
+// }
 
 
 
@@ -263,3 +295,7 @@ State(pool): State<Arc<PgPool>>,
             .into_response(),
     }
 }
+
+
+
+
