@@ -23,7 +23,6 @@ pub struct NewTransaction {
     pub transaction_type: Option<String>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct TransactionWithUserDetails {
     pub id: i32,

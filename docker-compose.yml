@@ -1,0 +1,35 @@
+version: "4.28"
+services:
+  faf_fat:
+    build: .
+
+    ports:
+      - "9090:9090" # Changed to use port 9090
+    depends_on:
+      - database
+    environment:
+      - DATABASE_URL=postgres://postgres:12345@127.0.0.1:5432/taf_taf
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+
+  database:
+    image: postgres:latest
+    volumes:
+      # - db-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB:taf_taf
+    ports:
+      - 5432:5432
+
+    healthcheck:
+      test: psql -U postgres -q -d postgres -c "SELECT 'ready';"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  default:
+    driver: bridge

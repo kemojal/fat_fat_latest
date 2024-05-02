@@ -2,24 +2,17 @@ use crate::models::merchant_models::MerchantUserId;
 use crate::models::payment_models::{EditPayment, NewPayment, Payment};
 use crate::services::payment_service::get_merchant_user_id;
 
-
 use axum::extract::{Path, State};
 
 use axum::response::{IntoResponse, Json};
 
-
-
 use reqwest::StatusCode;
-use serde_json::{json};
+use serde_json::json;
 // use sqlx::postgres::PgQueryResult;
 use sqlx::{query, query_as, PgPool};
 use std::sync::Arc;
 
-
-
-
-
-// pub async fn make_payment(
+// pub async fn make_payment2(
 //     State(pool): State<Arc<PgPool>>,
 //     Json(new_payment): Json<NewPayment>,
 // ) -> impl IntoResponse {
@@ -50,14 +43,11 @@ use std::sync::Arc;
 //     }))).into_response()
 // }
 
-
-
 pub async fn make_payment(
     // pool: Arc<PgPool>,
     State(pool): State<Arc<PgPool>>,
     Json(new_payment): Json<NewPayment>,
 ) -> impl IntoResponse {
-
     let merchant_user_id: Option<MerchantUserId> = query_as!(
         MerchantUserId,
         "SELECT user_id FROM merchants WHERE id = $1",
@@ -198,7 +188,7 @@ pub async fn get_merchant_payments(
 }
 
 pub async fn get_my_payments(
-    Path(user_id): Path<i32>, 
+    Path(user_id): Path<i32>,
     // pool: Arc<PgPool>
     State(pool): State<Arc<PgPool>>,
 ) -> impl IntoResponse {
@@ -243,9 +233,10 @@ pub async fn update_payment(
     }
 }
 
-pub async fn delete_payment(Path(payment_id): Path<i32>, 
-// pool: Arc<PgPool>
-State(pool): State<Arc<PgPool>>,
+pub async fn delete_payment(
+    Path(payment_id): Path<i32>,
+    // pool: Arc<PgPool>
+    State(pool): State<Arc<PgPool>>,
 ) -> impl IntoResponse {
     let result = query!(
         "
@@ -277,9 +268,10 @@ State(pool): State<Arc<PgPool>>,
     }
 }
 
-pub async fn cancel_payment(Path(payment_id): Path<i32>, 
-// pool: Arc<PgPool>
-State(pool): State<Arc<PgPool>>,
+pub async fn cancel_payment(
+    Path(payment_id): Path<i32>,
+    // pool: Arc<PgPool>
+    State(pool): State<Arc<PgPool>>,
 ) -> impl IntoResponse {
     let result = sqlx::query("UPDATE payments SET status = 'cancelled' WHERE id = $1")
         .bind(payment_id)
@@ -295,7 +287,3 @@ State(pool): State<Arc<PgPool>>,
             .into_response(),
     }
 }
-
-
-
-

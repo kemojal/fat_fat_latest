@@ -40,6 +40,7 @@ anyhow = "1.0.82"
 thiserror = "1.0.58"
 axum-extra = {version = "0.9.3", features = ["typed-header"] } 
 axum-prometheus = "0.6.1"
+tower = "0.4.13"
 # std-semaphore = "0.1.0"
 
 

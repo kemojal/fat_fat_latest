@@ -6,6 +6,7 @@ use axum_prometheus::PrometheusMetricLayer;
 use middlewares::auth_middleware::auth_middleware;
 use middlewares::logger_middleware::logger_middleware;
 // use middlewares::rate_limit_middleware::RateLimitStore;
+// use axum::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::Duration;
@@ -61,14 +62,22 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
         .nest("/api/merchant", merchant_routes(pool.clone()))
         .nest("/api/product", product_routes(pool.clone()))
         .nest("/api/payment", payment_routes(pool.clone()))
-        // .route_layer(middleware::from_fn(auth_middleware))
-        .nest("/api/auth", auth_routes(pool.clone()))
+        .route_layer(middleware::from_fn(auth_middleware))
+        // .nest("/api/auth", auth_routes(pool.clone()))
         .nest("/api/register", register_routes(pool.clone()))
-        // .route_layer(middleware::from_fn(logger_middleware))
+        .route_layer(middleware::from_fn(logger_middleware))
         .fallback(axum::routing::get(|| async {
             (http::StatusCode::NOT_FOUND, "Not Found")
         }))
         .layer(CorsLayer::permissive())
+        // .layer(BufferLayer::new(1024))
+        .route("/fast", get(|| async {}))
+        .route(
+            "/slow",
+            get(|| async {
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }),
+        )
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .layer(prometheus_layer)
         .with_state(pool)
@@ -93,7 +102,7 @@ async fn main() {
     let cloned_db_pool = pool.clone();
     let app = app_routes(cloned_db_pool.into());
 
-    let server_address = std::env::var("SERVER_ADDRESS").unwrap_or("0.0.0.0:9090".to_owned());
+    let server_address = std::env::var("SERVER_ADDRESS").unwrap_or("0.0.0.0:9091".to_owned());
     let listener = TcpListener::bind(server_address)
         .await
         .expect("Could not create tcp listener");
@@ -104,3 +113,4 @@ async fn main() {
         .init();
     axum::serve(listener, app).await.unwrap();
 }
+
