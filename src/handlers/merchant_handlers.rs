@@ -8,12 +8,14 @@ use serde_json::json;
 use sqlx::{query, query_as, PgPool};
 use std::sync::Arc;
 
+use super::auth_handlers::AuthError;
+
 pub async fn create_merchant(
     Path(username): Path<String>,
     State(pool): State<Arc<PgPool>>,
     Json(new_merchant): Json<NewMerchant>,
    
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError>{
     let user_id: Vec<UserId> = query_as!(
         UserId,
         "
@@ -25,7 +27,8 @@ pub async fn create_merchant(
     )
     .fetch_all(&*pool)
     .await
-    .expect("Failed to fetch user");
+    // .expect("Failed to fetch user");
+.map_err(|e| AuthError::DatabaseError(e.to_string()))?;
 
     if let Some(first_user_id) = user_id.get(0) {
         let existing_merchant: Option<MerchantId> = query_as!(
@@ -40,15 +43,16 @@ pub async fn create_merchant(
         )
         .fetch_optional(&*pool)
         .await
-        .expect("Failed to check for existing merchant");
+        // .expect("Failed to check for existing merchant");
+        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
 
         if let Some(_) = existing_merchant {
             // If an existing merchant with the same business_name is found,
             // return an error response indicating that the merchant already exists
-            return Json(json!({
+            return Ok(Json(json!({
                 "status": "error",
                 "message": "Merchant with the same business name already exists for this user"
-            }));
+            })));
         }
 
         let result = query!(
@@ -83,31 +87,31 @@ pub async fn create_merchant(
                 .execute(&*pool)
                 .await;
 
-                return Json(json!({
+                return Ok(Json(json!({
                     "status": "success",
                     "message": "Merchant added successfully",
                     "new_id": new_id
-                }));
+                })));
             }
             Err(e) => {
                 println!("Error inserting into database: {:?}", e);
                 // Handle error case
                 // You can return an error response or customize it as needed
                 // For now, let's return a generic error response
-                return Json(json!({
+                return Ok(Json(json!({
                     "status": "error",
                     "message": format!("Failed to create a merchant: {:?}", e)
-                }));
+                })));
             }
         }
     }
-    Json(json!([]))
+    Ok(Json(json!([])))
 }
 
 pub async fn get_merchant(
     Path(username): Path<String>, 
     State(pool): State<Arc<PgPool>>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError> {
     let user_id: Vec<UserId> = query_as!(
         UserId,
         "
@@ -119,7 +123,8 @@ pub async fn get_merchant(
     )
     .fetch_all(&*pool)
     .await
-    .expect("Failed to fetch user");
+    // .expect("Failed to fetch user");
+    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
 
     if let Some(first_user_id) = user_id.get(0) {
         let merchant: Option<Merchant> = query_as!(
@@ -133,13 +138,14 @@ pub async fn get_merchant(
         )
         .fetch_optional(&*pool)
         .await
-        .expect("Failed to fetch merchant");
+        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        // .expect("Failed to fetch merchant");
 
         if let Some(merchant) = merchant {
-            return Json(merchant);
+            return Ok(Json(merchant));
         }
     }
-    Json(Merchant {
+    Ok(Json(Merchant {
         id: 0,
         latitude: None,
         longitude: None,
@@ -152,7 +158,7 @@ pub async fn get_merchant(
         business_phone_number: None,
         website: None,
         user_id: Some(0),
-    })
+    }))
 }
 
 pub async fn edit_merchant(

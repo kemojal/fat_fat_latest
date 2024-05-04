@@ -1,6 +1,7 @@
 mod db;
 
 use axum::http::{self, HeaderValue, Method};
+use axum::response::IntoResponse;
 use axum::routing::get;
 use axum_prometheus::PrometheusMetricLayer;
 use middlewares::auth_middleware::auth_middleware;
@@ -10,6 +11,7 @@ use middlewares::logger_middleware::logger_middleware;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::Duration;
+use sysinfo::System;
 use tokio::net::TcpListener;
 
 use axum::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
@@ -63,7 +65,7 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
         .nest("/api/product", product_routes(pool.clone()))
         .nest("/api/payment", payment_routes(pool.clone()))
         .route_layer(middleware::from_fn(auth_middleware))
-        // .nest("/api/auth", auth_routes(pool.clone()))
+        .nest("/api/auth", auth_routes(pool.clone()))
         .nest("/api/register", register_routes(pool.clone()))
         .route_layer(middleware::from_fn(logger_middleware))
         .fallback(axum::routing::get(|| async {
@@ -79,6 +81,7 @@ fn app_routes(pool: Arc<Pool<Postgres>>) -> Router {
             }),
         )
         .route("/metrics", get(|| async move { metric_handle.render() }))
+        .route("/system_metrics", get(collect_system_metrics))
         .layer(prometheus_layer)
         .with_state(pool)
 }
@@ -102,7 +105,7 @@ async fn main() {
     let cloned_db_pool = pool.clone();
     let app = app_routes(cloned_db_pool.into());
 
-    let server_address = std::env::var("SERVER_ADDRESS").unwrap_or("0.0.0.0:9091".to_owned());
+    let server_address = std::env::var("SERVER_ADDRESS").unwrap_or("0.0.0.0:3090".to_owned());
     let listener = TcpListener::bind(server_address)
         .await
         .expect("Could not create tcp listener");
@@ -114,3 +117,26 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+// Function to collect system metrics
+async fn collect_system_metrics() -> impl IntoResponse {
+    // Create a new system object
+    let system = System::new();
+
+    // Collect system metrics
+    let cpu_usage = system.global_cpu_info().cpu_usage();
+    let memory_usage = system.used_memory();
+    let swap_usage = system.used_swap();
+
+    // Format metrics in Prometheus exposition format
+    let prometheus_metrics = format!(
+        "system_cpu_usage {}\nsystem_memory_usage {}\nsystem_swap_usage {}",
+        cpu_usage, memory_usage, swap_usage
+    );
+
+    // Return metrics as a HTTP response
+    http::Response::builder()
+        .status(http::StatusCode::OK)
+        .header("Content-Type", "text/plain")
+        .body(prometheus_metrics)
+        .unwrap()
+}

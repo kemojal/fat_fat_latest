@@ -19,4 +19,6 @@ rule_files:
 scrape_configs:
   - job_name: faf_fat
     static_configs:
-      - targets: ["http://localhost:9091"]
+      - targets:
+          - "http://localhost:9091"
+          - "http://localhost:9091/system_metrics"

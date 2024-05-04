@@ -4,15 +4,15 @@ use sqlx::FromRow;
 
 #[derive(Debug, Deserialize, FromRow)]
 pub struct SignInData {
-    pub email:  String,
-    pub password:  String,
+    pub email: String,
+    pub password: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub  struct AuthUser {
-    pub  id: Option<i32>,
-    pub  email: Option<String>,
-    pub  password_hash: Option<String>,
+pub struct AuthUser {
+    pub id: Option<i32>,
+    pub email: Option<String>,
+    pub password_hash: Option<String>,
     pub verified: Option<bool>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
@@ -38,6 +38,6 @@ pub struct Claims {
     // pub verified: bool,
     // pub created_at: NaiveDateTime,
     // pub updated_at: NaiveDateTime,
-    pub exp: usize,
-
+    // pub exp: usize,
+    pub exp: i64,
 }

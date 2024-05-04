@@ -12,6 +12,8 @@ use serde_json::json;
 use sqlx::{query, query_as, PgPool};
 use std::sync::Arc;
 
+use super::auth_handlers::AuthError;
+
 // pub async fn make_payment2(
 //     State(pool): State<Arc<PgPool>>,
 //     Json(new_payment): Json<NewPayment>,
@@ -47,7 +49,7 @@ pub async fn make_payment(
     // pool: Arc<PgPool>,
     State(pool): State<Arc<PgPool>>,
     Json(new_payment): Json<NewPayment>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError> {
     let merchant_user_id: Option<MerchantUserId> = query_as!(
         MerchantUserId,
         "SELECT user_id FROM merchants WHERE id = $1",
@@ -55,11 +57,16 @@ pub async fn make_payment(
     )
     .fetch_optional(&*pool)
     .await
-    .expect("Failed to fetch merchant's user ID");
+    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+    // .expect("Failed to fetch merchant's user ID");
 
     match merchant_user_id {
         Some(merchant_user_id) => {
-            let mut transaction = pool.begin().await.expect("Failed to start transaction");
+            let mut transaction = pool
+                .begin()
+                .await
+                .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+            // .expect("Failed to start transaction");
 
             // Add the paid amount to the merchant's wallet balance
             let merchant_wallet_update_result = query!(
@@ -74,15 +81,16 @@ pub async fn make_payment(
                 transaction
                     .rollback()
                     .await
-                    .expect("Failed to rollback transaction");
-                return (
+                    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+                // .expect("Failed to rollback transaction");
+                return Ok((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({
                         "status": "error",
                         "message": format!("Failed to update merchant's wallet balance: {}", e)
                     })),
                 )
-                    .into_response();
+                    .into_response());
             }
 
             // Subtract the paid amount from the user's wallet balance
@@ -98,15 +106,16 @@ pub async fn make_payment(
                 transaction
                     .rollback()
                     .await
-                    .expect("Failed to rollback transaction");
-                return (
+                    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+                // .expect("Failed to rollback transaction");
+                return Ok((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({
                         "status": "error",
                         "message": format!("Failed to update user's wallet balance: {}", e)
                     })),
                 )
-                    .into_response();
+                    .into_response());
             }
 
             let result = query!(
@@ -128,8 +137,9 @@ pub async fn make_payment(
                     transaction
                         .commit()
                         .await
-                        .expect("Failed to commit transaction");
-                    return (
+                        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+                    // .expect("Failed to commit transaction");
+                    return Ok((
                         StatusCode::OK,
                         Json(json!({
                             "status": "success",
@@ -137,33 +147,33 @@ pub async fn make_payment(
                             "new_payment_id": row.id
                         })),
                     )
-                        .into_response();
+                        .into_response());
                 }
                 Err(e) => {
                     transaction
                         .rollback()
                         .await
                         .expect("Failed to rollback transaction");
-                    return (
+                    return Ok((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({
                             "status": "error",
                             "message": format!("Failed to make payment: {}", e)
                         })),
                     )
-                        .into_response();
+                        .into_response());
                 }
             }
         }
         None => {
-            return (
+            return Ok((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(json!({
                     "status": "error",
                     "message": "This merchant is not connected to any user"
                 })),
             )
-                .into_response();
+                .into_response());
         }
     }
 }
@@ -172,7 +182,7 @@ pub async fn get_merchant_payments(
     Path(merchant_id): Path<i32>,
     // pool: Arc<PgPool>,
     State(pool): State<Arc<PgPool>>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError> {
     let payments: Vec<Payment> = query_as!(
         Payment,
         "
@@ -182,16 +192,17 @@ pub async fn get_merchant_payments(
     )
     .fetch_all(&*pool)
     .await
-    .expect("Failed to fetch payments");
+    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+    // .expect("Failed to fetch payments");
 
-    Json(payments)
+    Ok(Json(payments))
 }
 
 pub async fn get_my_payments(
     Path(user_id): Path<i32>,
     // pool: Arc<PgPool>
     State(pool): State<Arc<PgPool>>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError> {
     let payments: Vec<Payment> = query_as!(
         Payment,
         "
@@ -201,9 +212,10 @@ pub async fn get_my_payments(
     )
     .fetch_all(&*pool)
     .await
-    .expect("Failed to fetch payments");
+    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+    // .expect("Failed to fetch payments");
 
-    Json(payments)
+    Ok(Json(payments))
 }
 
 pub async fn update_payment(

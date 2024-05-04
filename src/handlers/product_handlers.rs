@@ -18,6 +18,8 @@ use std::sync::Arc;
 
 use qrcode::QrCode;
 
+use super::auth_handlers::AuthError;
+
 
 
 
@@ -26,7 +28,7 @@ pub async fn create_product(
     Path(user_id): Path<i32>,
     State(pool): State<Arc<PgPool>>,
     Json(new_product): Json<NewProduct>
-) -> impl IntoResponse {
+) -> Result< impl IntoResponse, AuthError> {
 
         let merchant_id: Vec<UserId> = query_as!(
             UserId,
@@ -39,7 +41,8 @@ pub async fn create_product(
         )
         .fetch_all(&*pool)
         .await
-        .expect("Failed to fetch merchant id");
+        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        // .expect("Failed to fetch merchant id");
 
         if let Some(first_merchant_id) = merchant_id.get(0) {
             let result = query!(
@@ -125,14 +128,14 @@ let cursor = Cursor::new(buffer.clone());
                   
                 }
                 Err(e) => {
-                    return Json(json!({
+                    return Ok(Json(json!({
                         "status": "error",
                         "message": format!("Failed to create product : {:?}", e)
-                    }));
+                    })));
                 }
             }
         }
-        Json(json!([]))
+        Ok(Json(json!([])))
 
 }
 
@@ -140,7 +143,7 @@ let cursor = Cursor::new(buffer.clone());
 pub async fn get_merchant_products(
     Path(merchant_id): Path<i32>,
     State(pool): State<Arc<PgPool>>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, AuthError> {
 
     
     
@@ -154,11 +157,12 @@ pub async fn get_merchant_products(
     )
     .fetch_all(&*pool)
     .await
-    .expect("Failed to fetch product");
+    .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+    // .expect("Failed to fetch product");
 
     
 
-    Json(product)
+    Ok(Json(product))
 }
 
 

@@ -81,7 +81,7 @@ pub async fn send_money(
 
     
 
-    if let Some(first_user_id) = user_id.get(0) {
+    if let Some(_first_user_id) = user_id.get(0) {
         let user_wallet_result: Result<Vec<Wallet>, sqlx::Error> = sqlx::query_as!(
             Wallet,
             "
